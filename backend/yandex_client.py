@@ -7,6 +7,24 @@ class YandexMusicClient:
     def __init__(self, token: str):
         self.client = Client(token).init()
     
+    def get_best_quality_url(self, download_info) -> str:
+        """Выбирает лучшее качество по битрейту"""
+        if not download_info:
+            return None
+        
+        # Сортируем по битрейту (лучшее качество первым)
+        sorted_info = sorted(download_info, key=lambda x: x.bitrate_in_kbps, reverse=True)
+        
+        # Логируем доступные качества
+        print(f"  📊 Доступные качества:")
+        for i, info in enumerate(sorted_info):
+            print(f"    {i}: {info.bitrate_in_kbps}kbps, {info.codec}")
+        
+        # Возвращаем лучшее качество
+        best_url = sorted_info[0].get_direct_link()
+        print(f"  ✅ Выбрано: {sorted_info[0].bitrate_in_kbps}kbps")
+        return best_url
+    
     def fetch_tracks_universal(self, source_id: str) -> List[Track]:
         """Универсальная функция для получения треков из любого источника"""
         try:
@@ -50,7 +68,11 @@ class YandexMusicClient:
                         if not download_info:
                             continue
                         
-                        download_url = download_info[0].get_direct_link()
+                        print(f"🎵 Трек '{track.title}':")
+                        download_url = self.get_best_quality_url(download_info)
+                        if not download_url:
+                            continue
+                        
                         tracks.append(Track(
                             title=track.title,
                             artist=track.artists[0].name if track.artists else "Unknown",
@@ -96,7 +118,10 @@ class YandexMusicClient:
                     if not download_info:
                         continue
                     
-                    download_url = download_info[0].get_direct_link()
+                    download_url = self.get_best_quality_url(download_info)
+                    if not download_url:
+                        continue
+                    
                     tracks.append(Track(
                         title=track.title,
                         artist=track.artists[0].name if track.artists else "Unknown",
@@ -129,8 +154,10 @@ class YandexMusicClient:
                 if not download_info:
                     continue
                 
-                # Берем первое доступное качество
-                download_url = download_info[0].get_direct_link()
+                # Выбираем лучшее качество
+                download_url = self.get_best_quality_url(download_info)
+                if not download_url:
+                    continue
                 
                 tracks.append(Track(
                     title=track.title,
@@ -167,8 +194,10 @@ class YandexMusicClient:
                         print(f"⚠️ Трек '{track.title}' недоступен для скачивания")
                         continue
                     
-                    # Берем первое доступное качество
-                    download_url = download_info[0].get_direct_link()
+                    # Выбираем лучшее качество
+                    download_url = self.get_best_quality_url(download_info)
+                    if not download_url:
+                        continue
                     
                     tracks.append(Track(
                         title=track.title,

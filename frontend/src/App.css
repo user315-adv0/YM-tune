@@ -45,6 +45,27 @@ body {
   margin-bottom: 30px;
 }
 
+.album-info {
+  text-align: center;
+  margin-bottom: 30px;
+  padding: 20px;
+  background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+  border-radius: 10px;
+  border: 2px solid #e1e5e9;
+}
+
+.album-info h2 {
+  color: #333;
+  margin-bottom: 10px;
+  font-size: 1.8rem;
+}
+
+.album-info p {
+  color: #666;
+  font-size: 1.1rem;
+  margin: 0;
+}
+
 .input-group {
   margin-bottom: 20px;
 }
@@ -181,6 +202,21 @@ body {
   cursor: not-allowed;
 }
 
+.btn-secondary {
+  background: linear-gradient(135deg, #6c757d 0%, #5a6268 100%);
+  color: white;
+}
+
+.btn-secondary:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(108, 117, 125, 0.4);
+}
+
+.btn-secondary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .btn-danger {
   background: linear-gradient(135deg, #ff6b6b 0%, #ee5a52 100%);
   color: white;
@@ -275,6 +311,11 @@ body {
 }
 
 .track-duration {
+  font-size: 0.9rem;
+  opacity: 0.6;
+}
+
+.track-bpm {
   font-size: 0.9rem;
   opacity: 0.6;
 }

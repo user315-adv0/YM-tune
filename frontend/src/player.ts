@@ -34,6 +34,13 @@ export class DJPlayer {
     
     if (tracks.length === 0) return;
     
+    // Проверяем состояние AudioContext
+    if (this.ctx.state === 'suspended') {
+      console.log('🔊 Восстанавливаем AudioContext...');
+      await this.ctx.resume();
+    }
+    
+    console.log('🎵 Начинаем воспроизведение', tracks.length, 'треков');
     await this.playNext();
   }
 
@@ -44,12 +51,15 @@ export class DJPlayer {
 
   private async playNext() {
     if (!this.isPlaying || this.currentIndex >= this.tracks.length) {
+      console.log('🛑 Воспроизведение остановлено или треки закончились');
       this.isPlaying = false;
       return;
     }
 
     const currentTrack = this.tracks[this.currentIndex];
     const nextTrack = this.tracks[this.currentIndex + 1];
+
+    console.log(`🎵 Воспроизводим трек ${this.currentIndex + 1}/${this.tracks.length}:`, currentTrack.title);
 
     try {
       // Загружаем текущий трек
@@ -66,9 +76,11 @@ export class DJPlayer {
       // Запускаем текущий трек
       sourceA.start();
       this.gainA.gain.setValueAtTime(1, this.ctx.currentTime);
+      console.log('▶️ Трек запущен');
 
       // Если есть следующий трек, готовим кроссфейд
       if (nextTrack && this.isPlaying) {
+        console.log('🔄 Подготавливаем кроссфейд к следующему треку');
         const bufferB = await this.loadAudio(nextTrack.url);
         const sourceB = this.ctx.createBufferSource();
         sourceB.buffer = bufferB;
@@ -99,7 +111,7 @@ export class DJPlayer {
       }
 
     } catch (error) {
-      console.error('Ошибка при воспроизведении трека:', error);
+      console.error('❌ Ошибка при воспроизведении трека:', error);
       // Пропускаем проблемный трек
       this.currentIndex++;
       setTimeout(() => this.playNext(), 1000);
@@ -107,9 +119,26 @@ export class DJPlayer {
   }
 
   private async loadAudio(url: string): Promise<AudioBuffer> {
-    const response = await fetch(url);
-    const arrayBuffer = await response.arrayBuffer();
-    return await this.ctx.decodeAudioData(arrayBuffer);
+    console.log('🔄 Загружаю аудио:', url);
+    try {
+      const response = await fetch(url);
+      console.log('📡 Ответ сервера:', response.status, response.statusText);
+      
+      if (!response.ok) {
+        throw new Error(`HTTP ${response.status}: ${response.statusText}`);
+      }
+      
+      const arrayBuffer = await response.arrayBuffer();
+      console.log('📦 Размер аудио данных:', arrayBuffer.byteLength, 'байт');
+      
+      const audioBuffer = await this.ctx.decodeAudioData(arrayBuffer);
+      console.log('✅ Аудио декодировано:', audioBuffer.duration, 'секунд');
+      
+      return audioBuffer;
+    } catch (error) {
+      console.error('❌ Ошибка загрузки аудио:', error);
+      throw error;
+    }
   }
 
   getCurrentTrack(): Track | null {
