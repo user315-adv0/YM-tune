@@ -9,11 +9,18 @@ function App() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [sourceId, setSourceId] = useState('liked');
+  const [sourceId, setSourceId] = useState('7935690');
   const [fadeDuration, setFadeDuration] = useState(5);
   const [apiStatus, setApiStatus] = useState<'checking' | 'connected' | 'disconnected'>('checking');
   
   const playerRef = useRef<DJPlayer | null>(null);
+
+  // Примеры альбомов для быстрого тестирования
+  const exampleAlbums = [
+    { id: '7935690', name: 'mgk - Sex Drive', description: '14 треков' },
+    { id: '1000', name: 'Lou Levy - Love Walked In', description: 'Джаз альбом' },
+    { id: 'liked', name: '❤️ Мне нравятся', description: 'Любимые треки' }
+  ];
 
   useEffect(() => {
     // Проверяем статус API при загрузке
@@ -38,7 +45,7 @@ function App() {
 
   const handleStart = async () => {
     if (!sourceId.trim()) {
-      alert('Введите ID или "liked" для любимых треков!');
+      alert('Введите ID или выберите пример!');
       return;
     }
 
@@ -76,6 +83,10 @@ function App() {
   const handleFadeChange = (value: number) => {
     setFadeDuration(value);
     playerRef.current?.setFadeDuration(value);
+  };
+
+  const handleExampleClick = (albumId: string) => {
+    setSourceId(albumId);
   };
 
   const getStatusColor = () => {
@@ -123,6 +134,23 @@ function App() {
               disabled={isPlaying}
             />
             <div className="source-type">{getSourceType()}</div>
+          </div>
+
+          <div className="examples">
+            <label>Быстрые примеры:</label>
+            <div className="example-buttons">
+              {exampleAlbums.map((album) => (
+                <button
+                  key={album.id}
+                  onClick={() => handleExampleClick(album.id)}
+                  disabled={isPlaying}
+                  className={`example-btn ${sourceId === album.id ? 'active' : ''}`}
+                >
+                  <div className="example-name">{album.name}</div>
+                  <div className="example-desc">{album.description}</div>
+                </button>
+              ))}
+            </div>
           </div>
 
           <div className="input-group">
