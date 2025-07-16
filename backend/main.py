@@ -35,6 +35,19 @@ async def health_check():
     is_connected = ya_client.test_connection()
     return {"status": "ok", "yandex_connected": is_connected}
 
+@app.get("/tracks/{source_id}", response_model=List[Track])
+async def get_tracks(source_id: str):
+    """Универсальный endpoint для получения треков из любого источника"""
+    if not ya_client:
+        raise HTTPException(status_code=500, detail="Токен Яндекс.Музыки не настроен")
+    
+    tracks = ya_client.fetch_tracks_universal(source_id)
+    
+    if not tracks:
+        raise HTTPException(status_code=404, detail=f"Треки не найдены для {source_id}")
+    
+    return tracks
+
 @app.get("/playlist/{playlist_id}", response_model=List[Track])
 async def get_playlist(playlist_id: str):
     """Получает треки плейлиста с прямыми URL для скачивания"""
@@ -45,6 +58,19 @@ async def get_playlist(playlist_id: str):
     
     if not tracks:
         raise HTTPException(status_code=404, detail="Плейлист не найден или пуст")
+    
+    return tracks
+
+@app.get("/liked", response_model=List[Track])
+async def get_liked_tracks():
+    """Получает треки из 'Мне нравятся' с прямыми URL для скачивания"""
+    if not ya_client:
+        raise HTTPException(status_code=500, detail="Токен Яндекс.Музыки не настроен")
+    
+    tracks = ya_client.fetch_liked_tracks()
+    
+    if not tracks:
+        raise HTTPException(status_code=404, detail="Нет любимых треков или ошибка доступа")
     
     return tracks
 

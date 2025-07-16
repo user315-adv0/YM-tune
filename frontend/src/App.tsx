@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { fetchPlaylist, checkHealth, Track } from './api';
+import { fetchTracks, checkHealth, Track } from './api';
 import { DJPlayer } from './player';
 import './App.css';
 
@@ -9,7 +9,7 @@ function App() {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [isPlaying, setIsPlaying] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-  const [playlistId, setPlaylistId] = useState('');
+  const [sourceId, setSourceId] = useState('liked');
   const [fadeDuration, setFadeDuration] = useState(5);
   const [apiStatus, setApiStatus] = useState<'checking' | 'connected' | 'disconnected'>('checking');
   
@@ -37,22 +37,24 @@ function App() {
   }, []);
 
   const handleStart = async () => {
-    if (!playlistId.trim()) {
-      alert('Введите ID плейлиста!');
+    if (!sourceId.trim()) {
+      alert('Введите ID или "liked" для любимых треков!');
       return;
     }
 
     setIsLoading(true);
     try {
-      const playlistTracks = await fetchPlaylist(playlistId);
-      setTracks(playlistTracks);
+      const loadedTracks = await fetchTracks(sourceId);
+      setTracks(loadedTracks);
       
-      if (playlistTracks.length > 0) {
+      if (loadedTracks.length > 0) {
         setIsPlaying(true);
-        playerRef.current?.play(playlistTracks);
+        playerRef.current?.play(loadedTracks);
+      } else {
+        alert('Треки не найдены или недоступны');
       }
     } catch (error) {
-      alert('Ошибка при загрузке плейлиста: ' + error);
+      alert('Ошибка при загрузке треков: ' + error);
     } finally {
       setIsLoading(false);
     }
@@ -92,6 +94,13 @@ function App() {
     }
   };
 
+  const getSourceType = () => {
+    if (sourceId.toLowerCase() === 'liked') return '❤️ Любимые треки';
+    if (sourceId.startsWith('lk.')) return '📝 Персональный плейлист';
+    if (sourceId.isdigit()) return '🎵 Плейлист/Альбом';
+    return '🎵 Источник';
+  };
+
   return (
     <div className="app">
       <header className="header">
@@ -104,15 +113,16 @@ function App() {
       <main className="main">
         <div className="controls">
           <div className="input-group">
-            <label htmlFor="playlist-id">ID плейлиста Яндекс.Музыки:</label>
+            <label htmlFor="source-id">ID источника:</label>
             <input
-              id="playlist-id"
+              id="source-id"
               type="text"
-              value={playlistId}
-              onChange={(e) => setPlaylistId(e.target.value)}
-              placeholder="Например: 123456789"
+              value={sourceId}
+              onChange={(e) => setSourceId(e.target.value)}
+              placeholder="liked, 7935690, lk.xxx..."
               disabled={isPlaying}
             />
+            <div className="source-type">{getSourceType()}</div>
           </div>
 
           <div className="input-group">
@@ -135,7 +145,7 @@ function App() {
                 disabled={isLoading || apiStatus !== 'connected'}
                 className="btn btn-primary"
               >
-                {isLoading ? 'Загрузка...' : '▶️ Запустить DJ'}
+                {isLoading ? 'Загрузка треков...' : '▶️ Запустить DJ'}
               </button>
             ) : (
               <button onClick={handleStop} className="btn btn-danger">
@@ -160,7 +170,7 @@ function App() {
 
         {tracks.length > 0 && (
           <div className="playlist">
-            <h3>📋 Плейлист ({tracks.length} треков):</h3>
+            <h3>{getSourceType()} ({tracks.length} треков):</h3>
             <div className="tracks-list">
               {tracks.map((track, index) => (
                 <div 

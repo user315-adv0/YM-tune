@@ -70,6 +70,13 @@ body {
   border-color: #667eea;
 }
 
+.source-type {
+  margin-top: 5px;
+  font-size: 0.9rem;
+  color: #667eea;
+  font-weight: 500;
+}
+
 .input-group input[type="range"] {
   width: 100%;
   height: 6px;

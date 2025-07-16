@@ -11,6 +11,16 @@ export interface Track {
 
 const API_BASE = 'http://localhost:8000';
 
+export async function fetchTracks(sourceId: string): Promise<Track[]> {
+  try {
+    const { data } = await axios.get<Track[]>(`${API_BASE}/tracks/${sourceId}`);
+    return data;
+  } catch (error) {
+    console.error('Ошибка при получении треков:', error);
+    throw new Error('Не удалось загрузить треки');
+  }
+}
+
 export async function fetchPlaylist(id: string): Promise<Track[]> {
   try {
     const { data } = await axios.get<Track[]>(`${API_BASE}/playlist/${id}`);
@@ -18,6 +28,16 @@ export async function fetchPlaylist(id: string): Promise<Track[]> {
   } catch (error) {
     console.error('Ошибка при получении плейлиста:', error);
     throw new Error('Не удалось загрузить плейлист');
+  }
+}
+
+export async function fetchLikedTracks(): Promise<Track[]> {
+  try {
+    const { data } = await axios.get<Track[]>(`${API_BASE}/liked`);
+    return data;
+  } catch (error) {
+    console.error('Ошибка при получении любимых треков:', error);
+    throw new Error('Не удалось загрузить любимые треки');
   }
 }
 
